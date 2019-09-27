@@ -1,4 +1,4 @@
-package core
+package rate
 
 import (
 	"math/rand"

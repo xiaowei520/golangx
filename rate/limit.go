@@ -80,7 +80,6 @@ func (lim *Limiter) Stop() bool {
 }
 
 func (lim *Limiter) Recover() {
-
 	if atomic.LoadUint32(&lim.done) == Normal {
 		return
 	}

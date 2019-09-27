@@ -79,11 +79,14 @@ func (lim *Limiter) Stop() bool {
 	return true
 }
 
-func (lim *Limiter) Recover() bool {
+func (lim *Limiter) Recover() {
+
+	if atomic.LoadUint32(&lim.done) == AbNormal {
+		return
+	}
 	lim.mu.Lock()
 	defer lim.mu.Unlock()
 	if lim.done == AbNormal {
 		defer atomic.StoreUint32(&lim.done, Normal)
 	}
-	return true
 }

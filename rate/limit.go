@@ -47,7 +47,7 @@ func NewLimiter(r Limit, n string) *Limiter {
 		EventName: n,
 	}
 }
-
+//default new limiter
 func DefaultLimiter(r Limit, n string) *Limiter {
 	return &Limiter{
 		limit:     r,
@@ -56,7 +56,8 @@ func DefaultLimiter(r Limit, n string) *Limiter {
 		minTime:   100,
 	}
 }
-
+//judging whether current limiting is necessary for random dormancy
+//if need ,now sleep [min,max) 's time
 func (lim *Limiter) Allow() bool {
 	//no limit rate
 	if atomic.LoadUint32(&lim.done) == Normal {
@@ -79,13 +80,17 @@ func (lim *Limiter) Stop() bool {
 	return true
 }
 
-func (lim *Limiter) Recover() {
+//recover or check funcition
+//return true represents successful recovery
+//return false means no recovery is required
+func (lim *Limiter) Recover() bool {
 	if atomic.LoadUint32(&lim.done) == Normal {
-		return
+		return false
 	}
 	lim.mu.Lock()
 	defer lim.mu.Unlock()
 	if lim.done == AbNormal {
 		defer atomic.StoreUint32(&lim.done, Normal)
 	}
+	return true
 }

@@ -40,13 +40,20 @@ type Limiter struct {
 	lastEvent time.Time
 }
 
-func NewLimiter(r Limit, n string) *Limiter {
+//self control [min,max) limiter
+func NewLimiter(r Limit, n string, minTime, maxTime int64) *Limiter {
 
+	if maxTime < minTime || minTime == 0 {
+		return DefaultLimiter(r, n)
+	}
 	return &Limiter{
 		limit:     r,
 		EventName: n,
+		maxTime:   maxTime,
+		minTime:   minTime,
 	}
 }
+
 //default new limiter
 func DefaultLimiter(r Limit, n string) *Limiter {
 	return &Limiter{
@@ -56,6 +63,7 @@ func DefaultLimiter(r Limit, n string) *Limiter {
 		minTime:   100,
 	}
 }
+
 //judging whether current limiting is necessary for random dormancy
 //if need ,now sleep [min,max) 's time
 func (lim *Limiter) Allow() bool {

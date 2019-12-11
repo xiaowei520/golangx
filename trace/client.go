@@ -1,9 +1,11 @@
 package trace
 
 import (
+	"fmt"
 	"github.com/opentracing/opentracing-go"
 	"github.com/opentracing/opentracing-go/ext"
 	"github.com/opentracing/opentracing-go/log"
+	"golang.org/x/net/context"
 	"io"
 	"net/http"
 	"net/http/httptrace"
@@ -38,6 +40,23 @@ type clientOptions struct {
 	disableClientTrace bool
 	spanName           string
 	peerService        string
+}
+
+func NewHTTPRequest(req *http.Request, options ...ClientOption) (*http.Request, *RequestTracer) {
+	opts := &clientOptions{
+		operationName: fmt.Sprintf("HTTP Client %s %s", req.Method, req.URL.Path),
+	}
+	for _, opt := range options {
+		opt(opts)
+	}
+	ht := &RequestTracer{tr: opentracing.GlobalTracer(), opts: opts}
+	ctx := req.Context()
+	if !opts.disableClientTrace {
+		ctx = httptrace.WithClientTrace(ctx, ht.clientTrace())
+	}
+	req = req.WithContext(context.WithValue(ctx, keyTracer, ht))
+	ht.start(req)
+	return req, ht
 }
 
 // ClientOption contols the behavior of TraceRequest.

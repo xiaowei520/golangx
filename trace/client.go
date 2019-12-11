@@ -6,6 +6,7 @@ import (
 	"github.com/opentracing/opentracing-go/log"
 	"io"
 	"net/http"
+	"net/http/httptrace"
 )
 
 const defaultComponentName = "test"
@@ -59,7 +60,7 @@ func (t *Transport) RoundTrip(req *http.Request) (*http.Response, error) {
 	ext.HTTPUrl.Set(tracer.sp, req.URL.String())
 
 	carrier := opentracing.HTTPHeadersCarrier(req.Header)
-	tracer.sp.Tracer().Inject(tracer.sp.Context(), opentracing.HTTPHeaders, carrier)
+	_ = tracer.sp.Tracer().Inject(tracer.sp.Context(), opentracing.HTTPHeaders, carrier)
 	resp, err := rt.RoundTrip(req)
 
 	if err != nil {
@@ -102,6 +103,36 @@ func (h *RequestTracer) start(req *http.Request) opentracing.Span {
 	ext.Component.Set(h.sp, componentName)
 
 	return h.sp
+}
+
+// Finish finishes the span of the traced request.
+func (h *RequestTracer) Finish() {
+	if h.sp != nil {
+		h.sp.Finish()
+	}
+}
+
+//下方注释方法均可自行实现打印细节
+//下方只实现getConn 来当demo
+func (h *RequestTracer) clientTrace() *httptrace.ClientTrace {
+	return &httptrace.ClientTrace{
+		GetConn: h.getConn,
+		//GotConn:              h.gotConn,
+		//PutIdleConn:          h.putIdleConn,
+		//GotFirstResponseByte: h.gotFirstResponseByte,
+		//Got100Continue:       h.got100Continue,
+		//DNSStart:             h.dnsStart,
+		//DNSDone:              h.dnsDone,
+		//ConnectStart:         h.connectStart,
+		//ConnectDone:          h.connectDone,
+		//WroteHeaders:         h.wroteHeaders,
+		//Wait100Continue:      h.wait100Continue,
+		//WroteRequest:         h.wroteRequest,
+	}
+}
+func (h *RequestTracer) getConn(hostPort string) {
+	ext.HTTPUrl.Set(h.sp, hostPort)
+	h.sp.LogFields(log.String("event", "get_conn"))
 }
 
 type closeTracker struct {

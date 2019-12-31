@@ -60,6 +60,8 @@ func BenchmarkLimiter_WindowAllow(b *testing.B) {
 
 //BenchmarkLimiter_Allow-8   	     100	 546062919 ns/op  当不被恢复的时候、大约500ms sleep
 //BenchmarkLimiter_Allow-8   	200000000	         6.69 ns/op  当被恢复的时候 6.69ns 每次
+//BenchmarkLimiter_Allow-8   	1000000000	         2.54 ns/op  当只进行allow时 且增加pad.
+//BenchmarkLimiter_Allow-8   	1000000000	         3.00 ns/op   当不增加pad 时
 func BenchmarkLimiter_Allow(b *testing.B) {
 	test := DefaultLimiter(1, "test")
 	for i := 0; i < b.N; i++ {

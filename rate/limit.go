@@ -22,6 +22,7 @@ type Limiter struct {
 	EventName string
 	//cas
 	done uint32
+	_    [60]byte
 
 	//slide windows num 目前区间次数
 	windowsNowNum uint32

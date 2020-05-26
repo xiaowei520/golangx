@@ -32,11 +32,6 @@ func TestNewLimiter(t *testing.T) {
 func TestLimiter_WindowAllow(t *testing.T) {
 	test := SWLimiter(1, "test", 100000, 1)
 	//fmt.Println(test.WindowAllow())
-	//fmt.Println(test.WindowAllow())
-	//fmt.Println(test.WindowAllow())
-	//fmt.Println(test.WindowAllow())
-	//fmt.Println(test.WindowAllow())
-
 	for i := 0; i < 30000000; i++ {
 		//time.Sleep(1 * time.Second)
 		if test.WindowAllow() {

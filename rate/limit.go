@@ -173,5 +173,9 @@ func (lim *Limiter) Recover() bool {
 	if lim.done == AbNormal {
 		defer atomic.StoreUint32(&lim.done, Normal)
 	}
+	//rand sleep, avoid conflict
+	randTime := rand.Int63n(lim.maxTime-lim.minTime) + lim.minTime
+	time.Sleep(time.Duration(randTime) * time.Millisecond)
+	
 	return true
 }
